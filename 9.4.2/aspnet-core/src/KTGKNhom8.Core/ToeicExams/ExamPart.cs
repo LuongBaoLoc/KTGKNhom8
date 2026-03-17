@@ -1,7 +1,7 @@
 using Abp.Domain.Entities;
 using System.Collections.Generic;
 
-namespace KTGKNHom8.ToeicExams
+namespace KTGKNhom8.ToeicExams
 {
     public class ExamPart : Entity<int>
     {

@@ -1,7 +1,7 @@
 using Abp.Domain.Entities.Auditing;
 using System.Collections.Generic;
 
-namespace KTGKNHom8.ToeicExams
+namespace KTGKNhom8.ToeicExams
 {
     public class Exam : FullAuditedEntity<int>
     {

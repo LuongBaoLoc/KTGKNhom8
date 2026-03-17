@@ -1,6 +1,6 @@
 using Abp.Application.Services;
 using Abp.Domain.Repositories;
-using Abp.UI; // Thư viện chứa UserFriendlyException
+using Abp.UI; 
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System;
@@ -8,12 +8,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using KTGKNhom8.ToeicExams.Dto;
+using KTGKNhom8.ToeicExams;
 
-namespace KTGKNHOM8.Toeic
+namespace KTGKNhom8.Toeic
 {
     public class ExamAppService : ApplicationService, IExamAppService
     {
-        // Dependency Injection các Repository của ASP.NET Boilerplate
         private readonly IRepository<Exam> _examRepository;
         private readonly IRepository<ExamPart> _partRepository;
         private readonly IRepository<Question> _questionRepository;
@@ -31,63 +32,89 @@ namespace KTGKNHOM8.Toeic
             _answerRepository = answerRepository;
         }
 
+        // 1. HÀM MỚI THÊM: Dành cho Controller gọi sau khi bóc tách xong Word/PDF
+        public async Task SaveParsedExamAsync(ParsedExamDto input)
+        {
+            // 1. Lưu thông tin Đề thi vào bảng Exams
+            var examId = await _examRepository.InsertAndGetIdAsync(new Exam
+            {
+                Title = string.IsNullOrEmpty(input.Title) ? "Đề thi TOEIC" : input.Title,
+                DurationMinutes = input.DurationMinutes,
+                Description = "Được import tự động từ Web"
+            });
+
+            // 2. Tạo một ExamPart mặc định (Part 5) để chứa các câu hỏi này
+            var partId = await _partRepository.InsertAndGetIdAsync(new ExamPart 
+            { 
+                ExamId = examId, 
+                PartType = 5 
+            });
+
+            // 3. Lưu danh sách Câu hỏi và Đáp án
+            foreach (var qDto in input.Questions)
+            {
+                var questionId = await _questionRepository.InsertAndGetIdAsync(new Question
+                {
+                    ExamPartId = partId,
+                    QuestionNumber = qDto.QuestionNumber,
+                    Content = qDto.Content,
+                    IsShuffle = qDto.IsShuffle
+                });
+
+                // Lưu 4 đáp án A, B, C, D (Kiểm tra IsCorrect dựa vào CorrectAnswer)
+                await _answerRepository.InsertAsync(new Answer { QuestionId = questionId, Label = "A", Content = qDto.OptionA, IsCorrect = (qDto.CorrectAnswer == "A") });
+                await _answerRepository.InsertAsync(new Answer { QuestionId = questionId, Label = "B", Content = qDto.OptionB, IsCorrect = (qDto.CorrectAnswer == "B") });
+                await _answerRepository.InsertAsync(new Answer { QuestionId = questionId, Label = "C", Content = qDto.OptionC, IsCorrect = (qDto.CorrectAnswer == "C") });
+                await _answerRepository.InsertAsync(new Answer { QuestionId = questionId, Label = "D", Content = qDto.OptionD, IsCorrect = (qDto.CorrectAnswer == "D") });
+            }
+        }
+
+        // 2. HÀM CŨ: Giữ lại để code không báo lỗi với Interface
         public async Task CreateExamFromWordAsync(byte[] fileBytes, string fileName)
         {
-            // Unit of Work của ABP sẽ tự động theo dõi hàm này. 
-            // Nếu có UserFriendlyException được throw, nó sẽ TỰ ĐỘNG ROLLBACK.
-
             using (var memoryStream = new MemoryStream(fileBytes))
             {
                 using (var wordDoc = WordprocessingDocument.Open(memoryStream, false))
                 {
                     var body = wordDoc.MainDocumentPart.Document.Body;
-                    // Lấy toàn bộ text từ file word, phân cách bằng dấu xuống dòng
                     string fullText = string.Join("\n", body.Elements<Paragraph>().Select(p => p.InnerText));
 
-                    // 1. Quét thông tin chung của Đề thi [cite: 46-47]
                     var titleMatch = Regex.Match(fullText, @"\[EXAM_TITLE\](.*)");
                     if (!titleMatch.Success) throw new UserFriendlyException("Lỗi Format: Thiếu thẻ [EXAM_TITLE]");
 
                     var timeMatch = Regex.Match(fullText, @"\[EXAM_TIME\]\s*(\d+)");
                     if (!timeMatch.Success) throw new UserFriendlyException("Lỗi Format: Thiếu thẻ [EXAM_TIME]");
 
-                    // Lưu Exam vào Database và lấy Id vừa tạo
                     var examId = await _examRepository.InsertAndGetIdAsync(new Exam
                     {
                         Title = titleMatch.Groups[1].Value.Trim(),
-                        TimeLimit = int.Parse(timeMatch.Groups[1].Value.Trim()),
+                        DurationMinutes = int.Parse(timeMatch.Groups[1].Value.Trim()),
                         Description = "Được import từ file: " + fileName
                     });
 
-                    // 2. Quét Part 5 [cite: 48]
                     var part5Match = Regex.Match(fullText, @"\[PART:5\](.*?)(\[PART:6\]|$)", RegexOptions.Singleline);
                     if (part5Match.Success)
                     {
                         var partId = await _partRepository.InsertAndGetIdAsync(new ExamPart { ExamId = examId, PartType = 5 });
-                        
-                        // tất cả các khối câu hỏi trong Part 5 (từ [Q:xxx] đến [KEY:x]) [cite: 49-54]
                         var qMatches = Regex.Matches(part5Match.Value, @"\[Q:(\d+)\](.*?)\[KEY:([A-D])\]", RegexOptions.Singleline);
                         
                         foreach (Match qMatch in qMatches)
                         {
                             var qNumber = int.Parse(qMatch.Groups[1].Value);
-                            var qBody = qMatch.Groups[2].Value; // Nội dung câu hỏi và 4 đáp án
-                            var correctKey = qMatch.Groups[3].Value.Trim().ToUpper(); // A, B, C, D
+                            var qBody = qMatch.Groups[2].Value; 
+                            var correctKey = qMatch.Groups[3].Value.Trim().ToUpper(); 
 
-                            // Lấy text câu hỏi (nằm trước chữ [A])
                             var qContentMatch = Regex.Match(qBody, @"^(.*?)(?=\[A\])", RegexOptions.Singleline);
                             string qText = qContentMatch.Success ? qContentMatch.Groups[1].Value.Trim() : "Lỗi đọc nội dung";
 
-                            // Lưu Câu hỏi
                             var questionId = await _questionRepository.InsertAndGetIdAsync(new Question
                             {
                                 ExamPartId = partId,
                                 QuestionNumber = qNumber,
                                 Content = qText,
-                                IsShuffle = true // Mặc định cho phép đảo
+                                IsShuffle = true 
                             });
 
-                            // Lưu 4 đáp án [cite: 50-53]
                             string[] labels = { "A", "B", "C", "D" };
                             foreach (var label in labels)
                             {
@@ -104,9 +131,6 @@ namespace KTGKNHOM8.Toeic
                             }
                         }
                     }
-                    
-                    // Code quét Part 6 và Part 7 (có [PASSAGE_START]) sẽ tương tự, 
-                    // bạn có thể dựa vào khung Regex này để mở rộng thêm sau.
                 }
             }
         }

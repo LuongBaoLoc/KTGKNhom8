@@ -1,6 +1,6 @@
 using Abp.Domain.Entities;
 
-namespace KTGKNHom8.ToeicExams
+namespace KTGKNhom8.ToeicExams
 {
     public class Question : Entity<int>
     {

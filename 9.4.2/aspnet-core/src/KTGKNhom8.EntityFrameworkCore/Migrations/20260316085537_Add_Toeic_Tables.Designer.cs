@@ -4,6 +4,7 @@ using KTGKNhom8.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KTGKNhom8.Migrations
 {
     [DbContext(typeof(KTGKNhom8DbContext))]
-    partial class KTGKNhom8DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260316085537_Add_Toeic_Tables")]
+    partial class Add_Toeic_Tables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1380,6 +1383,141 @@ namespace KTGKNhom8.Migrations
                     b.ToTable("AbpWebhookSubscriptions");
                 });
 
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Exam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Exams");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.ExamPart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PartType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.ToTable("ExamParts");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Passage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExamPartId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamPartId");
+
+                    b.ToTable("Passages");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Question", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CorrectAnswer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExamPartId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsShuffle")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OptionA")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionB")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionC")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionD")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PassageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuestionNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamPartId");
+
+                    b.HasIndex("PassageId");
+
+                    b.ToTable("Questions");
+                });
+
             modelBuilder.Entity("KTGKNhom8.Authorization.Roles.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1647,166 +1785,6 @@ namespace KTGKNhom8.Migrations
                     b.ToTable("AbpTenants");
                 });
 
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Answer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Label")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Answers");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Exam", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("DeleterUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Exams");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.ExamPart", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ExamId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PartType")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExamId");
-
-                    b.ToTable("ExamParts");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Passage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ExamPartId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExamPartId");
-
-                    b.ToTable("Passages");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Question", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CorrectAnswer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ExamPartId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsShuffle")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OptionA")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OptionB")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OptionC")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OptionD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("PassageId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuestionNumber")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExamPartId");
-
-                    b.HasIndex("PassageId");
-
-                    b.ToTable("Questions");
-                });
-
             modelBuilder.Entity("Abp.Application.Features.EditionFeatureSetting", b =>
                 {
                     b.HasBaseType("Abp.Application.Features.FeatureSetting");
@@ -1983,6 +1961,45 @@ namespace KTGKNhom8.Migrations
                     b.Navigation("WebhookEvent");
                 });
 
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.ExamPart", b =>
+                {
+                    b.HasOne("KTGKNHom8.ToeicExams.Exam", "Exam")
+                        .WithMany("Parts")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Passage", b =>
+                {
+                    b.HasOne("KTGKNHom8.ToeicExams.ExamPart", "ExamPart")
+                        .WithMany("Passages")
+                        .HasForeignKey("ExamPartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ExamPart");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Question", b =>
+                {
+                    b.HasOne("KTGKNHom8.ToeicExams.ExamPart", "ExamPart")
+                        .WithMany("Questions")
+                        .HasForeignKey("ExamPartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KTGKNHom8.ToeicExams.Passage", "Passage")
+                        .WithMany("Questions")
+                        .HasForeignKey("PassageId");
+
+                    b.Navigation("ExamPart");
+
+                    b.Navigation("Passage");
+                });
+
             modelBuilder.Entity("KTGKNhom8.Authorization.Roles.Role", b =>
                 {
                     b.HasOne("KTGKNhom8.Authorization.Users.User", "CreatorUser")
@@ -2052,45 +2069,6 @@ namespace KTGKNhom8.Migrations
                     b.Navigation("LastModifierUser");
                 });
 
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.ExamPart", b =>
-                {
-                    b.HasOne("KTGKNhom8.ToeicExams.Exam", "Exam")
-                        .WithMany("Parts")
-                        .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Exam");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Passage", b =>
-                {
-                    b.HasOne("KTGKNhom8.ToeicExams.ExamPart", "ExamPart")
-                        .WithMany("Passages")
-                        .HasForeignKey("ExamPartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ExamPart");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Question", b =>
-                {
-                    b.HasOne("KTGKNhom8.ToeicExams.ExamPart", "ExamPart")
-                        .WithMany("Questions")
-                        .HasForeignKey("ExamPartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("KTGKNhom8.ToeicExams.Passage", "Passage")
-                        .WithMany("Questions")
-                        .HasForeignKey("PassageId");
-
-                    b.Navigation("ExamPart");
-
-                    b.Navigation("Passage");
-                });
-
             modelBuilder.Entity("Abp.Application.Features.EditionFeatureSetting", b =>
                 {
                     b.HasOne("Abp.Application.Editions.Edition", "Edition")
@@ -2140,6 +2118,23 @@ namespace KTGKNhom8.Migrations
                     b.Navigation("Children");
                 });
 
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Exam", b =>
+                {
+                    b.Navigation("Parts");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.ExamPart", b =>
+                {
+                    b.Navigation("Passages");
+
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("KTGKNHom8.ToeicExams.Passage", b =>
+                {
+                    b.Navigation("Questions");
+                });
+
             modelBuilder.Entity("KTGKNhom8.Authorization.Roles.Role", b =>
                 {
                     b.Navigation("Claims");
@@ -2160,23 +2155,6 @@ namespace KTGKNhom8.Migrations
                     b.Navigation("Settings");
 
                     b.Navigation("Tokens");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Exam", b =>
-                {
-                    b.Navigation("Parts");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.ExamPart", b =>
-                {
-                    b.Navigation("Passages");
-
-                    b.Navigation("Questions");
-                });
-
-            modelBuilder.Entity("KTGKNhom8.ToeicExams.Passage", b =>
-                {
-                    b.Navigation("Questions");
                 });
 #pragma warning restore 612, 618
         }
