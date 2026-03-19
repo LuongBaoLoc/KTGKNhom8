@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using KTGKNhom8.ToeicExams.Dto;
 using Abp.Dependency;
+using System.Collections.Generic;
 
 namespace KTGKNhom8.ToeicExams
 {
@@ -28,7 +29,23 @@ namespace KTGKNhom8.ToeicExams
                 examDto.DurationMinutes = time;
             }
 
-            // 3. Tìm các câu hỏi (Ví dụ cho Part 5)
+            // ==========================================
+            // 3. ĐỌC CÁC ĐOẠN VĂN (PASSAGE)
+            // ==========================================
+            string passagePattern = @"\[PASSAGE_START\](.*?)\[PASSAGE_END\]";
+            var passageMatches = Regex.Matches(fullText, passagePattern, RegexOptions.Singleline);
+            
+            foreach (Match match in passageMatches)
+            {
+                string passageContent = match.Groups[1].Value.Trim();
+                
+                // LƯU Ý: Nếu ParsedExamDto của bạn có danh sách Passages, hãy bỏ comment dòng dưới
+                // examDto.Passages.Add(new ParsedPassageDto { Content = passageContent });
+            }
+
+            // ==========================================
+            // 4. ĐỌC CÂU HỎI & FIX LỖI PART 6 (CÂU TRỐNG)
+            // ==========================================
             // Regex này tìm từ [Q:số] cho đến [KEY:đáp_án]
             string questionPattern = @"\[Q:(\d+)\](?:(?:\s*\[SHUFFLE:\s*(TRUE|FALSE)\])?)(.*?)\[A\](.*?)\[B\](.*?)\[C\](.*?)\[D\](.*?)\[KEY:([A-D])\]";
             var matches = Regex.Matches(fullText, questionPattern, RegexOptions.Singleline);
@@ -47,19 +64,28 @@ namespace KTGKNhom8.ToeicExams
                     CorrectAnswer = match.Groups[8].Value.Trim()
                 };
 
-                // Validate dữ liệu (Nếu thiếu đáp án thì báo lỗi để Rollback theo yêu cầu)
-                if (string.IsNullOrEmpty(q.Content) || string.IsNullOrEmpty(q.CorrectAnswer))
+                // FIX LỖI 131: Nếu là Part 6 (không có câu hỏi), tự động gán chữ "Điền từ vào chỗ trống"
+                if (string.IsNullOrEmpty(q.Content))
                 {
-                    throw new Exception($"Lỗi định dạng tại câu hỏi số {q.QuestionNumber}. Vui lòng kiểm tra lại file Word.");
+                    q.Content = "Điền từ vào chỗ trống";
                 }
 
+                // Validate dữ liệu (Chỉ kiểm tra đáp án, nếu thiếu đáp án thì báo lỗi)
+                if (string.IsNullOrEmpty(q.CorrectAnswer))
+                {
+                    throw new Exception($"Câu hỏi số {q.QuestionNumber} đang bị thiếu Đáp án (KEY). Vui lòng kiểm tra lại file Word.");
+                }
+
+                // Thêm câu hỏi vào danh sách
                 examDto.Questions.Add(q);
             }
 
             return examDto;
         }
 
-        // Hàm hỗ trợ đọc Text thuần từ OpenXml
+        // ==========================================
+        // CÁC HÀM HỖ TRỢ ĐỌC FILE VÀ CẮT CHUỖI
+        // ==========================================
         private string ReadTextFromWord(Stream stream)
         {
             var sb = new StringBuilder();
@@ -74,7 +100,6 @@ namespace KTGKNhom8.ToeicExams
             return sb.ToString();
         }
 
-        // Hàm hỗ trợ dùng Regex để lấy chuỗi
         private string ExtractValue(string text, string pattern)
         {
             var match = Regex.Match(text, pattern);

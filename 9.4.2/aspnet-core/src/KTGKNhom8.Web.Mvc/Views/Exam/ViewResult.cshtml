@@ -1,0 +1,78 @@
+@model KTGKNhom8.ToeicExams.Dto.ExamResultDto
+
+@{
+    ViewBag.Title = "Kết Quả Thi";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-trophy"></i> KẾT QUẢ THI TOEIC</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Đề thi: <strong>@Model.ExamTitle</strong></h5>
+                            <p>Thời gian làm: <strong>@Model.TimeSpent phút</strong></p>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <h3>Điểm: <span class="badge badge-primary">@Model.ScorePercentage.ToString("F1")%</span></h3>
+                            <p>@Model.CorrectAnswers/@Model.TotalQuestions câu đúng</p>
+                        </div>
+                    </div>
+
+                    <div class="progress mb-4" style="height: 30px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: @Model.ScorePercentage%; font-weight: bold; font-size: 16px;">
+                            @Model.ScorePercentage.ToString("F1")%
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="mb-3">Chi Tiết Từng Câu Hỏi:</h5>
+                    
+                    @foreach (var qResult in Model.QuestionResults)
+                    {
+                        <div class="card mb-3 @(qResult.IsCorrect ? "border-success" : "border-danger")">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <strong>Câu @qResult.QuestionNumber:</strong> @qResult.Content
+                                        <div class="mt-2">
+                                            <span class="badge @(qResult.IsCorrect ? "badge-success" : "badge-danger") mr-2">
+                                                @(qResult.IsCorrect ? "✓ Đúng" : "✗ Sai")
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 text-right">
+                                        @if (qResult.IsCorrect)
+                                        {
+                                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-times-circle text-danger fa-2x"></i>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="mt-2 ml-3">
+                                    <p><strong>Bạn chọn:</strong> <span class="badge badge-info">@qResult.UserAnswer</span> - @(Model.QuestionResults.FirstOrDefault(x => x.QuestionNumber == qResult.QuestionNumber)?.UserAnswer) </p>
+                                    <p><strong>Đáp án đúng:</strong> <span class="badge badge-success">@qResult.CorrectAnswer</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mt-4 text-center">
+                        <a href="@Url.Action("Index")" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home"></i> Về Danh Sách Đề
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

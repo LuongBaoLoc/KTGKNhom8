@@ -13,10 +13,10 @@ namespace KTGKNhom8.ToeicExams
     {
         public ParsedExamDto ParseExamFromPdf(Stream fileStream)
         {
-            // 1. Đọc toàn bộ text từ file PDF
+            // 1. Đọc toàn bộ text từ file PDF ? chi
             string fullText = ReadTextFromPdf(fileStream);
 
-            // 2. Dùng lại thuật toán bóc tách y hệt như Word
+            // 2. Dùng lại thuật toán bóc tách y hệt như Word chi?
             var examDto = new ParsedExamDto();
 
             examDto.Title = ExtractValue(fullText, @"\[EXAM_TITLE\](.*?)(?=\n|\r)");
